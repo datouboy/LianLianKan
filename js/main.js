@@ -171,26 +171,9 @@ function pushImg(levelMap_i){
 
 //元素连接扫描，返回扫描结果ture or false
 function connectScan(){
-	//修改两个元素的排序
 	var imgFirst, imgSecond;
 	imgFirst  = clickRecord.First;
 	imgSecond = clickRecord.Second;
-	/*if(clickRecord.First[0] < clickRecord.Second[0]){
-		imgFirst  = clickRecord.First;
-		imgSecond = clickRecord.Second;
-	}else if(clickRecord.First[0] > clickRecord.Second[0]){
-		imgFirst  = clickRecord.Second;
-		imgSecond = clickRecord.First;
-	}else{
-		if(clickRecord.First[1] < clickRecord.Second[1]){
-			imgFirst  = clickRecord.First;
-			imgSecond = clickRecord.Second;
-		}else{
-			imgFirst  = clickRecord.Second;
-			imgSecond = clickRecord.First;
-		}
-	}*/
-	//console.log(imgFirst, imgSecond);
 
 	//扫描逻辑，广度优先搜索
 	//存放每个端点的坐标，用于检查断点坐标是否就是目标坐标
@@ -265,12 +248,14 @@ function connectScan(){
 				if(imgBoxArray[j][lineOne[i][1]] === false){
 					//console.log(j,lineOne[i][1]);
 					lineTwo.push([j,lineOne[i][1],'y']);//此处的y表示，第三次扫描在Y轴上扫描
+					scanning([j,lineOne[i][1],'y']);
 				}else{
+					endImg.push([j,lineOne[i][1]]);
 					//判断终点是否是目标，是则跳出循环，不是则记录折点
-					if(!checkImg([j,lineOne[i][1]])){
+					if(checkImg([j,lineOne[i][1]])){
+						console.log('连接成功，加载连接成功的函数');
 						break Outermost;
 					}
-					endImg.push([j,lineOne[i][1]]);
 					break;
 				}
 			}
@@ -280,12 +265,14 @@ function connectScan(){
 				if(imgBoxArray[j][lineOne[i][1]] === false){
 					//console.log(j,lineOne[i][1]);
 					lineTwo.push([j,lineOne[i][1],'y']);//此处的y表示，第三次扫描在Y轴上扫描
+					scanning([j,lineOne[i][1],'y']);
 				}else{
+					endImg.push([j,lineOne[i][1]]);
 					//判断终点是否是目标，不是则记录折点
-					if(!checkImg([j,lineOne[i][1]])){
+					if(checkImg([j,lineOne[i][1]])){
+						console.log('连接成功，加载连接成功的函数');
 						break Outermost;
 					}
-					endImg.push([j,lineOne[i][1]]);
 					break;
 				}
 			}
@@ -299,12 +286,14 @@ function connectScan(){
 				if(imgBoxArray[lineOne[i][0]][j] === false){
 					//console.log(lineOne[i][0],j);
 					lineTwo.push([lineOne[i][0],j,'x']);//此处的x表示，第三次扫描在x轴上扫描
+					scanning([lineOne[i][0],j,'x']);
 				}else{
+					endImg.push([lineOne[i][0],j]);
 					//判断终点是否是目标，不是则记录折点
-					if(!checkImg([lineOne[i][0],j])){
+					if(checkImg([lineOne[i][0],j])){
+						console.log('连接成功，加载连接成功的函数');
 						break Outermost;
 					}
-					endImg.push([lineOne[i][0],j]);
 					break;
 				}
 			}
@@ -314,32 +303,103 @@ function connectScan(){
 				if(imgBoxArray[lineOne[i][0]][j] === false){
 					//console.log(lineOne[i][0],j);
 					lineTwo.push([lineOne[i][0],j,'x']);//此处的x表示，第三次扫描在x轴上扫描
+					scanning([lineOne[i][0],j,'x']);
 				}else{
+					endImg.push([lineOne[i][0],j]);
 					//判断终点是否是目标，不是则记录折点
-					if(!checkImg([lineOne[i][0],j])){
+					if(checkImg([lineOne[i][0],j])){
+						console.log('连接成功，加载连接成功的函数');
 						break Outermost;
 					}
-					endImg.push([lineOne[i][0],j]);
 					break;
 				}
 			}
 			//console.log('------------------------------');
 		}
 	}
-	console.log(turnPosition.First);
-	console.log(lineTwo);
+	//console.log(turnPosition.First);
+	//console.log(lineTwo);
 
 	//检查端点列表中是否有目标坐标
-	if(checkImgList()){
+	/*if(checkImgList()){
 		console.log('连接成功，加载连接成功的函数');
-		return false;
-	}
+		//return false;
+	}*/
 
-	$('#line_'+turnPosition.First[0]+'_'+turnPosition.First[1]).html("x");
+	//$('#line_'+turnPosition.First[0]+'_'+turnPosition.First[1]).html("x");
 
 	/*for(var i=0; i<=endImg.length-1; i++){
 		$('#line_'+endImg[i][0]+'_'+endImg[i][1]).html("x");
 	}*/
+
+	/*
+		三次扫描，此处是第二次折弯的第三条线扫描
+		X轴方向的只进行Y轴扫描，Y轴方向的只进行X轴扫描
+	*/
+	function scanning(img){
+		var connect = false;
+		if(img[2] == 'x'){
+			//console.log(img);
+			//x轴正向扫描
+			for(var j=img[0]; j<=Stage.xNum-1; j++){
+				if(j == img[0]){continue;}
+				if(imgBoxArray[j][img[1]] === false){
+				}else{
+					//判断终点是否是目标，是则跳出循环，不是则记录折点
+					if(checkImg([j,img[1]])){
+						console.log('连接成功，加载连接成功的函数');
+						connect = true;
+					}
+					break;
+				}
+			}
+			//x轴反向扫描
+			for(var j=img[0]; j>=0; j--){
+				if(j == img[0]){continue;}
+				if(imgBoxArray[j][img[1]] === false){
+				}else{
+					//判断终点是否是目标，不是则记录折点
+					if(checkImg([j,img[1]])){
+						console.log('连接成功，加载连接成功的函数');
+						connect = true;
+					}
+					break;
+				}
+			}
+		}else{
+			//y轴正向扫描
+			for(var j=img[1]; j<=Stage.yNum-1; j++){
+				if(j == img[1]){continue;}
+				if(imgBoxArray[img[0]][j] === false){
+				}else{
+					//判断终点是否是目标，不是则记录折点
+					if(checkImg([img[0],j])){
+						console.log('连接成功，加载连接成功的函数');
+						connect = true;
+					}
+					break;
+				}
+			}
+			//y轴反向扫描
+			for(var j=img[1]; j>=0; j--){
+				if(j == img[1]){continue;}
+				if(imgBoxArray[img[0]][j] === false){
+				}else{
+					//判断终点是否是目标，不是则记录折点
+					if(checkImg([img[0],j])){
+						console.log('连接成功，加载连接成功的函数');
+						connect = true;
+					}
+					break;
+				}
+			}
+		}
+		if(connect){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 	//检查端点是否是目标坐标
 	function checkImg(img){
