@@ -476,6 +476,7 @@ function removeImg(){
 		renderLine(turnPosition.First, turnPosition.Second);
 		renderLine(turnPosition.Second, clickRecord.Second);
 	}
+
 	delImgAndLine()
 
 	//初始化折线点
@@ -484,17 +485,25 @@ function removeImg(){
 
 	//删除元素和连接线
 	function delImgAndLine(){
-		//删除元素
-		imgBoxArray[clickRecord.First[0]][clickRecord.First[1]] = false;
-		imgBoxArray[clickRecord.Second[0]][clickRecord.Second[1]] = false;
+		var clickFirst = clickRecord.First;
+		var clickSecond = clickRecord.Second;
+		
+		//从页面中删除元素
+		setTimeout(function(){
+			
+			$('#img_'+clickFirst[0]+'_'+clickFirst[1]).html('');
+			$('#img_'+clickSecond[0]+'_'+clickSecond[1]).html('');
+			//删除连接
+			for(var i=0; i<=connectingLine.length-1; i++){
+				$('#line_'+connectingLine[i][0]+'_'+connectingLine[i][1]).html('');
+			}
 
-		$('#img_'+clickRecord.First[0]+'_'+clickRecord.First[1]).html('');
-		$('#img_'+clickRecord.Second[0]+'_'+clickRecord.Second[1]).html('');
-		//删除连接
-		for(var i=0; i<=connectingLine.length-1; i++){
-			$('#line_'+connectingLine[i][0]+'_'+connectingLine[i][1]).html('');
-		}
-		console.log(imgBoxArray);
+			//从数组中删除元素
+			imgBoxArray[clickFirst[0]][clickFirst[1]] = false;
+			imgBoxArray[clickSecond[0]][clickSecond[1]] = false;
+
+			connectingLine = [];
+		}, 100);
 	}
 
 	//判断两点之间是X方向连接还是Y轴方向连接
