@@ -4,7 +4,7 @@ ul.llkUl {
 	position: absolute;
 	list-style: none;
 	left: 0;
-	top: 0;
+	top: 30px;
 }
 
 ul.llkUl li {

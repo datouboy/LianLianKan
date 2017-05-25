@@ -12,6 +12,8 @@ var imgElement = ['t1','t2','t3','t4','t5'];
 //关卡
 var level = 0;
 
+var fraction = 0;
+
 //关卡地图，目前2个关卡
 var levelMap = [];
 levelMap[0] = [
@@ -346,22 +348,7 @@ function connectScan(){
 			//console.log('------------------------------');
 		}
 	}
-	//console.log(turnPosition.First);
-	//console.log(lineTwo);
 
-	//检查端点列表中是否有目标坐标
-	/*if(checkImgList()){
-		console.log('连接成功，加载连接成功的函数');
-		//return false;
-	}*/
-
-	//打印测试转折点
-	//$('#line_'+turnPosition.First[0]+'_'+turnPosition.First[1]).html("x");
-	//$('#line_'+turnPosition.Second[0]+'_'+turnPosition.Second[1]).html("x");
-
-	/*for(var i=0; i<=endImg.length-1; i++){
-		$('#line_'+endImg[i][0]+'_'+endImg[i][1]).html("x");
-	}*/
 
 	/*
 		三次扫描，此处是第二次折弯的第三条线扫描
@@ -487,7 +474,7 @@ function removeImg(){
 	function delImgAndLine(){
 		var clickFirst = clickRecord.First;
 		var clickSecond = clickRecord.Second;
-		
+
 		//从页面中删除元素
 		setTimeout(function(){
 			
@@ -502,8 +489,42 @@ function removeImg(){
 			imgBoxArray[clickFirst[0]][clickFirst[1]] = false;
 			imgBoxArray[clickSecond[0]][clickSecond[1]] = false;
 
+			//清空连接线
 			connectingLine = [];
+			//计分
+			addFraction();
+			//判断是否胜利
+			isWinner();
+
 		}, 100);
+	}
+
+	//游戏胜利
+	function isWinner(){
+		if(checkWinner()){
+			alert('胜利');
+			if(level == 0){
+				resertGame(1);
+			}
+		}
+	}
+
+	//检查是否胜利
+	function checkWinner(){
+		//总元素个数
+		var num = 0;
+		for (var i = 0; i <= imgBoxArray.length-1; i++){
+			for (var j = 0; j <= imgBoxArray[i].length-1; j++){
+				if(imgBoxArray[i][j] !== false){
+					num++;
+				}
+			}
+		}
+		if(num > 0){
+			return false;
+		}else{
+			return true;
+		}
 	}
 
 	//判断两点之间是X方向连接还是Y轴方向连接
@@ -562,6 +583,42 @@ function removeImg(){
 			}
 		}
 	}
+}
+
+//计分
+function addFraction(){
+	fraction = fraction + 10;
+	$('#addFraction').html(fraction);
+}
+
+//根据游戏关卡初始化游戏
+function resertGame(level_i){
+	//删除绑定的事件
+	$('#clickBox > li').unbind();
+	//删除Html内容
+	$(clickBox).html('');
+	$(lineBox).html('');
+	$(imgBox).html('');
+	//初始化关卡和设置
+	level = level_i;
+	imgBoxArray = [];
+	Stage.xNum = levelMap[level][1].length;
+	Stage.yNum = levelMap[level].length;
+	//初始化点击记录
+	clickRecord = {
+		First : false,
+		Second : false
+	}
+	//初始化转折点记录
+	turnPosition = {
+		First : false,
+		Second : false
+	}
+	//初始化连接线数组
+	connectingLine = [];
+	//初始化关卡
+	initStageBox();
+	pushImg(level_i);
 }
 
 //输入一个数组，返回一个随机结果
