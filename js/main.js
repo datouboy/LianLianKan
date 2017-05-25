@@ -3,15 +3,6 @@ var clickBox = $('#clickBox');
 var lineBox = $('#lineBox');
 var imgBox = $('#imgBox');
 
-//设置棋盘
-var Stage = {
-	// X轴20个格子，Y轴20个格子
-	xNum : 10,
-	yNum : 10,
-	// 每个格子宽高40px
-	width : 40,
-}
-
 //用来存放连连看的元素信息
 var imgBoxArray = [];
 
@@ -34,6 +25,7 @@ levelMap[0] = [
 	[1,0,0,0,1,1,1,1,1,1],
 	[0,0,0,1,1,1,1,1,1,1],
 	[0,0,1,1,1,1,1,1,1,1]
+
 ];
 levelMap[1] = [
 	[1,1,1,1,1,1,1,1,1,1],
@@ -48,6 +40,15 @@ levelMap[1] = [
 	[1,1,1,1,1,1,1,1,1,1]
 ]
 
+//设置棋盘
+var Stage = {
+	// X轴20个格子，Y轴20个格子
+	xNum : levelMap[0][1].length,
+	yNum : levelMap[0].length,
+	// 每个格子宽高40px
+	width : 40,
+}
+
 //点击记录
 var clickRecord = {
 	First : false,
@@ -59,6 +60,9 @@ var turnPosition = {
 	First : false,
 	Second : false
 }
+
+//连接线数组
+var connectingLine = [];
 
 ////////////////////////////////////////////////////////////
 
@@ -88,8 +92,8 @@ function initStageBox(){
 
 	//初始化点击事件
 	$('#clickBox > li').click(function(){
-		var x = $(this).attr('data-x');
-		var y = $(this).attr('data-y');
+		var x = Number($(this).attr('data-x'));
+		var y = Number($(this).attr('data-y'));
 	
 		//点击第一个元素
 		if(clickRecord.First === false){
@@ -159,11 +163,11 @@ function pushImg(levelMap_i){
 			if(levelMap[levelMap_i][i][j] === 1){
 				//随机获取格子类型
 				var type_i = getRandom(imgElementNum);
-				imgBoxArray[i][j] = imgElement[type_i];
+				imgBoxArray[j][i] = imgElement[type_i];
 				imgElementNum[type_i].num--;
 
 				//向格子写入元素图片
-				$('#img_'+i+'_'+j).html(type_i);
+				$('#img_'+j+'_'+i).html(type_i);
 			}
 		}
 	}
@@ -227,6 +231,7 @@ function connectScan(){
 	//检查端点列表中是否有目标坐标
 	if(checkImgList()){
 		console.log('连接成功，加载连接成功的函数');
+		removeImg();
 		return false;
 	}
 
@@ -244,16 +249,22 @@ function connectScan(){
 			//console.log('只扫描X',lineOne[i]);
 			//x轴正向扫描
 			for(var j=lineOne[i][0]; j<=Stage.xNum-1; j++){
+				turnPosition.Second = [j,lineOne[i][1]];
 				if(j == lineOne[i][0]){continue;}
 				if(imgBoxArray[j][lineOne[i][1]] === false){
 					//console.log(j,lineOne[i][1]);
 					lineTwo.push([j,lineOne[i][1],'y']);//此处的y表示，第三次扫描在Y轴上扫描
-					scanning([j,lineOne[i][1],'y']);
+					if(scanning([j,lineOne[i][1],'y'])){
+						removeImg();
+						break Outermost;
+					}
 				}else{
 					endImg.push([j,lineOne[i][1]]);
 					//判断终点是否是目标，是则跳出循环，不是则记录折点
 					if(checkImg([j,lineOne[i][1]])){
+						turnPosition.Second = false;
 						console.log('连接成功，加载连接成功的函数');
+						removeImg();
 						break Outermost;
 					}
 					break;
@@ -261,16 +272,22 @@ function connectScan(){
 			}
 			//x轴反向扫描
 			for(var j=lineOne[i][0]; j>=0; j--){
+				turnPosition.Second = [j,lineOne[i][1]];
 				if(j == lineOne[i][0]){continue;}
 				if(imgBoxArray[j][lineOne[i][1]] === false){
 					//console.log(j,lineOne[i][1]);
 					lineTwo.push([j,lineOne[i][1],'y']);//此处的y表示，第三次扫描在Y轴上扫描
-					scanning([j,lineOne[i][1],'y']);
+					if(scanning([j,lineOne[i][1],'y'])){
+						removeImg();
+						break Outermost;
+					}
 				}else{
 					endImg.push([j,lineOne[i][1]]);
 					//判断终点是否是目标，不是则记录折点
 					if(checkImg([j,lineOne[i][1]])){
+						turnPosition.Second = false;
 						console.log('连接成功，加载连接成功的函数');
+						removeImg();
 						break Outermost;
 					}
 					break;
@@ -282,16 +299,22 @@ function connectScan(){
 			//console.log('只扫描Y',lineOne[i]);
 			//y轴正向扫描
 			for(var j=lineOne[i][1]; j<=Stage.yNum-1; j++){
+				turnPosition.Second = [lineOne[i][0],j];
 				if(j == lineOne[i][1]){continue;}
 				if(imgBoxArray[lineOne[i][0]][j] === false){
 					//console.log(lineOne[i][0],j);
 					lineTwo.push([lineOne[i][0],j,'x']);//此处的x表示，第三次扫描在x轴上扫描
-					scanning([lineOne[i][0],j,'x']);
+					if(scanning([lineOne[i][0],j,'x'])){
+						removeImg();
+						break Outermost;
+					}
 				}else{
 					endImg.push([lineOne[i][0],j]);
 					//判断终点是否是目标，不是则记录折点
 					if(checkImg([lineOne[i][0],j])){
+						turnPosition.Second = false;
 						console.log('连接成功，加载连接成功的函数');
+						removeImg();
 						break Outermost;
 					}
 					break;
@@ -299,16 +322,22 @@ function connectScan(){
 			}
 			//y轴反向扫描
 			for(var j=lineOne[i][1]; j>=0; j--){
+				turnPosition.Second = [lineOne[i][0],j];
 				if(j == lineOne[i][1]){continue;}
 				if(imgBoxArray[lineOne[i][0]][j] === false){
 					//console.log(lineOne[i][0],j);
 					lineTwo.push([lineOne[i][0],j,'x']);//此处的x表示，第三次扫描在x轴上扫描
-					scanning([lineOne[i][0],j,'x']);
+					if(scanning([lineOne[i][0],j,'x'])){
+						removeImg();
+						break Outermost;
+					}
 				}else{
 					endImg.push([lineOne[i][0],j]);
 					//判断终点是否是目标，不是则记录折点
 					if(checkImg([lineOne[i][0],j])){
+						turnPosition.Second = false;
 						console.log('连接成功，加载连接成功的函数');
+						removeImg();
 						break Outermost;
 					}
 					break;
@@ -326,7 +355,9 @@ function connectScan(){
 		//return false;
 	}*/
 
+	//打印测试转折点
 	//$('#line_'+turnPosition.First[0]+'_'+turnPosition.First[1]).html("x");
+	//$('#line_'+turnPosition.Second[0]+'_'+turnPosition.Second[1]).html("x");
 
 	/*for(var i=0; i<=endImg.length-1; i++){
 		$('#line_'+endImg[i][0]+'_'+endImg[i][1]).html("x");
@@ -423,6 +454,103 @@ function connectScan(){
 			return true;
 		}else{
 			return false;
+		}
+	}
+}
+
+//消除连接成功的元素
+function removeImg(){
+	if(turnPosition.First == false){
+		//直接连线
+		console.log('直接连线');
+		renderLine(clickRecord.First, clickRecord.Second);
+	}else if(turnPosition.Second == false){
+		//一折连线
+		console.log('一折连线');
+		renderLine(clickRecord.First, turnPosition.First);
+		renderLine(turnPosition.First, clickRecord.Second);
+	}else{
+		//两折连线
+		console.log('两折连线');
+		renderLine(clickRecord.First, turnPosition.First);
+		renderLine(turnPosition.First, turnPosition.Second);
+		renderLine(turnPosition.Second, clickRecord.Second);
+	}
+	delImgAndLine()
+
+	//初始化折线点
+	turnPosition.First  = false;
+	turnPosition.Second = false;
+
+	//删除元素和连接线
+	function delImgAndLine(){
+		//删除元素
+		imgBoxArray[clickRecord.First[0]][clickRecord.First[1]] = false;
+		imgBoxArray[clickRecord.Second[0]][clickRecord.Second[1]] = false;
+
+		$('#img_'+clickRecord.First[0]+'_'+clickRecord.First[1]).html('');
+		$('#img_'+clickRecord.Second[0]+'_'+clickRecord.Second[1]).html('');
+		//删除连接
+		for(var i=0; i<=connectingLine.length-1; i++){
+			$('#line_'+connectingLine[i][0]+'_'+connectingLine[i][1]).html('');
+		}
+		console.log(imgBoxArray);
+	}
+
+	//判断两点之间是X方向连接还是Y轴方向连接
+	function direction(imgA, imgB){
+		if(imgA[0] == imgB[0]){
+			return 'y';
+		}else{
+			return 'x';
+		}
+	}
+
+	//向页面写线的样式
+	function renderLine(imgA, imgB){
+		var spotA, spotB;
+		if(direction(imgA, imgB) == 'x'){
+			//console.log('X轴连接')
+			//两点大小排序
+			if(imgA[0] > imgB[0]){
+				spotA = imgB[0];
+				spotB = imgA[0];
+			}else{
+				spotA = imgA[0];
+				spotB = imgB[0];
+			}
+			for(var i=spotA; i<=spotB; i++){
+				var nowImg    = [i,imgA[1]].toString();
+				var firstImg  = clickRecord.First.toString();
+				var secondImg = clickRecord.Second.toString();
+
+				if(nowImg==firstImg){continue;}
+				if(nowImg==secondImg){continue;}
+
+				connectingLine.push([i,imgA[1]]);
+				$('#line_'+i+'_'+imgA[1]).html('-');
+			}
+		}else{
+			//console.log('Y轴连接')
+			//两点大小排序
+			if(imgA[1] > imgB[1]){
+				spotA = imgB[1];
+				spotB = imgA[1];
+			}else{
+				spotA = imgA[1];
+				spotB = imgB[1];
+			}
+			for(var i=spotA; i<=spotB; i++){
+				var nowImg    = [imgA[0],i].toString();
+				var firstImg  = clickRecord.First.toString();
+				var secondImg = clickRecord.Second.toString();
+
+				if(nowImg==firstImg){continue;}
+				if(nowImg==secondImg){continue;}
+
+				connectingLine.push([imgA[0],i]);
+				$('#line_'+imgA[0]+'_'+i).html('|');
+			}
 		}
 	}
 }
