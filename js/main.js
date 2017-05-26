@@ -11,8 +11,10 @@ var imgElement = ['t1','t2','t3','t4','t5'];
 
 //关卡
 var level = 0;
-
+//计分
 var fraction = 0;
+//计时函数
+var timeOut;
 
 //关卡地图，目前2个关卡
 var levelMap = [];
@@ -48,6 +50,8 @@ levelMap[2] = [
 	[1,1,1,1,1,1,1,1,1,1],
 	[1,1,1,1,1,1,1,1,1,1]
 ]
+//关卡地图对应的时间
+var levelMapTime = [30, 60, 70];
 
 //设置棋盘
 var Stage = {
@@ -199,6 +203,28 @@ function pushImg(levelMap_i){
 				$('#img_'+j+'_'+i).html(type_i);
 			}
 		}
+	}
+	getRunTime(levelMap_i);
+}
+
+//倒计时
+function getRunTime(levelMap_i){
+	var allTime = levelMapTime[levelMap_i];
+	$('#runTime').html(allTime);
+	timeOut = setInterval(function(){
+		timeReduce();
+	},1000);
+
+	function timeReduce(){
+		console.log(levelMap_i);
+		if(allTime == 0){
+			timeOut = clearInterval(timeOut);
+			//时间结束，游戏失败
+			gameOver();
+		}else{
+			allTime--;
+		}
+		$('#runTime').html(allTime);
 	}
 }
 
@@ -529,6 +555,8 @@ function removeImg(){
 	//游戏胜利
 	function isWinner(){
 		if(checkWinner()){
+			//重置计时器
+			timeOut = clearInterval(timeOut);
 			//如果没到最后一关，则初始化下一关卡
 			if(level == levelMap.length-1){
 				alert('恭喜通关！');
@@ -620,6 +648,13 @@ function removeImg(){
 function addFraction(){
 	fraction = fraction + 10;
 	$('#addFraction').html(fraction);
+}
+
+//游戏失败结束
+function gameOver(){
+	$('#clickBox > li').unbind();
+	$(clickBox).html('');
+	alert("GameOver");
 }
 
 //根据游戏关卡初始化游戏
