@@ -17,6 +17,14 @@ var fraction = 0;
 //关卡地图，目前2个关卡
 var levelMap = [];
 levelMap[0] = [
+	[1,1,1,1,1,1],
+	[1,1,1,1,1,1],
+	[1,1,0,0,1,1],
+	[1,1,0,0,1,1],
+	[1,1,1,1,1,1],
+	[1,1,1,1,1,1]
+];
+levelMap[1] = [
 	[1,1,1,1,1,1,1,1,0,0],
 	[1,1,1,1,1,1,1,0,0,0],
 	[1,1,1,1,1,1,0,0,0,1],
@@ -27,9 +35,8 @@ levelMap[0] = [
 	[1,0,0,0,1,1,1,1,1,1],
 	[0,0,0,1,1,1,1,1,1,1],
 	[0,0,1,1,1,1,1,1,1,1]
-
 ];
-levelMap[1] = [
+levelMap[2] = [
 	[1,1,1,1,1,1,1,1,1,1],
 	[1,1,1,1,1,1,1,1,1,1],
 	[1,1,1,1,1,1,1,1,1,1],
@@ -104,6 +111,7 @@ function initStageBox(){
 				return false;
 			}else{
 				clickRecord.First = [x,y];
+				clickShow(x, y);
 			}
 		}
 		//点击第二个元素
@@ -113,6 +121,8 @@ function initStageBox(){
 				return false;
 			}
 			clickRecord.Second = [x,y];
+			clickShow(x, y);
+			clickShowRemove();
 			if(clickRecord.First[0] == clickRecord.Second[0] && clickRecord.First[1] == clickRecord.Second[1]){
 				alert("请不要点击同一个元素！");
 			}else{
@@ -127,6 +137,22 @@ function initStageBox(){
 			}
 		}
 	})
+
+	//添加点击效果
+	function clickShow(x, y){
+		$('#click_'+x+'_'+y).css('border','1px solid #000');
+	}
+
+	//删除点击效果
+	function clickShowRemove(){
+		var clickFirst = clickRecord.First;
+		var clickSecond = clickRecord.Second;
+
+		setTimeout(function(){
+			$('#click_'+clickFirst[0]+'_'+clickFirst[1]).css('border','1px solid #eee');
+			$('#click_'+clickSecond[0]+'_'+clickSecond[1]).css('border','1px solid #eee');
+		},100);
+	}
 }
 
 //初始化关卡地图，传入关卡地图的模板号
@@ -144,6 +170,7 @@ function pushImg(levelMap_i){
 	//计算每个元素的个数
 	var oneImgNum = Math.floor(num/imgElement.length);
 	var oneImgNum_last = oneImgNum + num - (oneImgNum*imgElement.length);
+	console.log(oneImgNum,oneImgNum_last);
 	var imgElementNum = [];
 	for(var i=0; i<=imgElement.length-1; i++){
 		if(i == imgElement.length-1){
@@ -502,9 +529,13 @@ function removeImg(){
 	//游戏胜利
 	function isWinner(){
 		if(checkWinner()){
-			alert('胜利');
-			if(level == 0){
-				resertGame(1);
+			//如果没到最后一关，则初始化下一关卡
+			if(level == levelMap.length-1){
+				alert('恭喜通关！');
+			}else{
+				alert('胜利！');
+				level++;
+				resertGame(level);
 			}
 		}
 	}
